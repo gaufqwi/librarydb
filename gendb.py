@@ -1,4 +1,4 @@
-#!/usr/bin/python3.9
+#!/usr/bin/python
 
 import bs4
 import requests
@@ -64,7 +64,7 @@ class Library:
                     acdate = template.pubdate + timedelta(days=randint(0,60))
                 self.collection.append(Book(template, acdate))
                 # Possibly generate another copy with exponentially decreasing probability
-                p = p ** 5
+                p = p ** 4
 
     def gen_checkouts (self, ndays, checkout_pct):
         today = date.today()
@@ -167,16 +167,16 @@ def gen_db (dbname, libraries):
     conn.close()
 
 parser = argparse.ArgumentParser(description='Generate sample library database')
-parser.add_argument('--db', type=str, default='library.db')
-parser.add_argument('--book_pct', type=float, default=20)
-parser.add_argument('--checkout_days', type=int, default=50)
-parser.add_argument('--checkout_pct', type=float, default=5)
-parser.add_argument('--lib_pct', type=float, default=10)
-parser.add_argument('--err_pct', type=float, default=0.1)
-parser.add_argument('--states', nargs='+', default=['SC', 'NC', 'GA'])
-parser.add_argument('--seed', type=str, default='')
-parser.add_argument('--books', type=str, default='books.csv')
-parser.add_argument('--truerand', action='store_true')
+parser.add_argument('--db', type=str, default='library.db', help='Path for target DB')
+parser.add_argument('--book_pct', type=float, default=20, help='Approximate percent of books in source CSV to include')
+parser.add_argument('--checkout_days', type=int, default=50, help='Number of days of circulation to simulate')
+parser.add_argument('--checkout_pct', type=float, default=2, help='Approximate percent of library holdings checked out each day')
+parser.add_argument('--lib_pct', type=float, default=10, help='Percent of libraries from each state to include')
+parser.add_argument('--err_pct', type=float, default=0.1, help='Percent of books with acquisition date error')
+parser.add_argument('--states', nargs='+', default=['SC', 'NC', 'GA'], help='Postal abbreviations of states to include')
+parser.add_argument('--seed', type=str, default='', help='Extra degree of freedom for seeing RNG')
+parser.add_argument('--books', type=str, default='books.csv', help='Path to source CSV for book data')
+parser.add_argument('--truerand', action='store_true', help="Don't use reproducible random numbers")
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.WARN)
@@ -184,7 +184,8 @@ if __name__ == '__main__':
     if args.truerand:
         seed()
     else:
-        seed(f'{args.seed}{args.lib_pct}{args.book_pct}{"".join(args.states)}')
+        seed(f'{args.seed}{str(args)}')
+        #seed(f'{args.seed}{args.lib_pct}{args.book_pct}{"".join(args.states)}')
     # Get library data
     logging.info('Getting library data')
     libraries = []
